@@ -106,7 +106,10 @@ function BuildingCard({ building }) {
                   : "-"}
               </strong>
             </span>
-            <Link to={`/crack/${building.id}`} className={styles.dashboardBtn}>
+            <Link
+              to={`/building/${building.id}`}
+              className={styles.dashboardBtn}
+            >
               대시보드 바로가기
             </Link>
           </div>

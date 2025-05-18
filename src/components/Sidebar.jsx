@@ -26,10 +26,10 @@ export default function Sidebar() {
       {/* 건물 통계 링크 */}
       <div
         className={`${styles.logo} ${
-          location.pathname === "/crack/1" ? styles.active : ""
+          location.pathname === "/building/1" ? styles.active : ""
         }`}
       >
-        <Link to="/crack/1">
+        <Link to="/building/1">
           <img src="/buildings.svg" alt="건물 통계" title="건물 통계" />
         </Link>
       </div>

@@ -147,38 +147,57 @@ export default function VWorldMaps({
       const markerId = `marker-${type}-${Date.now()}-${Math.random()
         .toString(36)
         .substr(2, 9)}`;
-      const entity = cesiumViewerRef.current.entities.add({
+
+      const entityOptions = {
         id: markerId,
         position: window.Cesium.Cartesian3.fromDegrees(
           longitude,
           latitude,
           height
         ),
-        point: {
-          pixelSize: 10,
-          color: window.Cesium.Color[color],
-          outlineColor: window.Cesium.Color.WHITE,
-          outlineWidth: 2,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        },
         label: label
           ? {
               text: label,
-              font: "14px sans-serif",
+              font: "bold 15px sans-serif",
               fillColor: window.Cesium.Color.WHITE,
               outlineColor: window.Cesium.Color.BLACK,
-              outlineWidth: 2,
+              outlineWidth: 3,
               style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-              verticalOrigin: window.Cesium.VerticalOrigin.TOP,
-              pixelOffset: new window.Cesium.Cartesian2(0, -10),
+              verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
+              pixelOffset: new window.Cesium.Cartesian2(0, 30),
               disableDepthTestDistance: Number.POSITIVE_INFINITY,
+
+              backgroundPadding: new window.Cesium.Cartesian2(7, 5),
             }
           : undefined,
         properties: {
           type: type,
           waypointId: waypointId, // 웨이포인트 ID 저장
         },
-      });
+      };
+
+      // 균열 마커는 경고 표시로 표시
+      if (type === "crack") {
+        entityOptions.billboard = {
+          image: createWarningIcon(color),
+          width: 24,
+          height: 24,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          verticalOrigin: window.Cesium.VerticalOrigin.CENTER,
+          horizontalOrigin: window.Cesium.HorizontalOrigin.CENTER,
+        };
+      } else {
+        // 건물 등 다른 마커는 기존 포인트 스타일 유지
+        entityOptions.point = {
+          pixelSize: 10,
+          color: window.Cesium.Color[color],
+          outlineColor: window.Cesium.Color.WHITE,
+          outlineWidth: 2,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        };
+      }
+
+      const entity = cesiumViewerRef.current.entities.add(entityOptions);
 
       console.log(
         `마커 추가 성공: ${markerId}, 타입: ${type}, 웨이포인트ID: ${waypointId}`
@@ -189,6 +208,56 @@ export default function VWorldMaps({
       console.error("마커 추가 중 오류:", error);
       return null;
     }
+  };
+
+  // 경고 아이콘 생성 함수 (느낌표만 표시, 배경 없음)
+  const createWarningIcon = (color) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 24;
+    canvas.height = 24;
+    const context = canvas.getContext("2d");
+
+    // 배경 투명하게 설정
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 색상 설정 (severity에 따른 색상)
+    let iconColor;
+    switch (color) {
+      case "RED":
+        iconColor = "#FF0000";
+        break;
+      case "ORANGE":
+        iconColor = "#FFA500";
+        break;
+      case "YELLOW":
+        iconColor = "#FFFF00";
+        break;
+      case "LIME":
+        iconColor = "#00FF00";
+        break;
+      default:
+        iconColor = "#FF0000";
+    }
+
+    // 더 큰 느낌표 그리기
+    // 느낌표 막대 그리기
+    context.fillStyle = iconColor;
+    context.beginPath();
+    context.roundRect(9, 2, 6, 14, 3);
+    context.fill();
+
+    // 느낌표 점 그리기
+    context.beginPath();
+    context.arc(12, 20, 3, 0, Math.PI * 2);
+    context.fill();
+
+    // 테두리 효과를 위한 그림자 추가
+    context.shadowColor = "rgba(0, 0, 0, 0.7)";
+    context.shadowBlur = 2;
+    context.shadowOffsetX = 1;
+    context.shadowOffsetY = 1;
+
+    return canvas.toDataURL();
   };
 
   // 마커 제거 함수
@@ -656,39 +725,39 @@ export default function VWorldMaps({
                 waypoint.label || `웨이포인트 ${waypoint.id}`
               );
 
-              // // 웨이포인트 위치로 카메라 이동
-              // if (
-              //   waypoint.location &&
-              //   waypoint.location.longitude &&
-              //   waypoint.location.latitude
-              // ) {
-              //   const waypointAltitude = waypoint.location.altitude || 10;
+              // 웨이포인트 위치로 카메라 이동
+              if (
+                waypoint.location &&
+                waypoint.location.longitude &&
+                waypoint.location.latitude
+              ) {
+                const waypointAltitude = waypoint.location.altitude || 10;
 
-              //   // 카메라 이동 시도
-              //   try {
-              //     const cameraPosition = window.Cesium.Cartesian3.fromDegrees(
-              //       waypoint.location.longitude,
-              //       waypoint.location.latitude,
-              //       waypointAltitude + 20 // 웨이포인트 위치보다 20m 위에서 보기
-              //     );
+                // 카메라 이동 시도
+                try {
+                  const cameraPosition = window.Cesium.Cartesian3.fromDegrees(
+                    waypoint.location.longitude,
+                    waypoint.location.latitude,
+                    waypointAltitude + 20 // 웨이포인트 위치보다 20m 위에서 보기
+                  );
 
-              //     cesiumViewerRef.current.camera.flyTo({
-              //       destination: cameraPosition,
-              //       orientation: {
-              //         heading: window.Cesium.Math.toRadians(0),
-              //         pitch: window.Cesium.Math.toRadians(-90), // 90도 아래로 기울여서 보기 (직각)
-              //         roll: 0,
-              //       },
-              //       duration: 1.0, // 부드러운 이동을 위한 1초 지속 시간
-              //     });
+                  cesiumViewerRef.current.camera.flyTo({
+                    destination: cameraPosition,
+                    orientation: {
+                      heading: window.Cesium.Math.toRadians(0),
+                      pitch: window.Cesium.Math.toRadians(-90), // 90도 아래로 기울여서 보기 (직각)
+                      roll: 0,
+                    },
+                    duration: 1.0, // 부드러운 이동을 위한 1초 지속 시간
+                  });
 
-              //     console.log(
-              //       `웨이포인트로 카메라 이동 완료: ${waypointIdStr}`
-              //     );
-              //   } catch (error) {
-              //     console.error("카메라 이동 중 오류:", error);
-              //   }
-              // }
+                  console.log(
+                    `웨이포인트로 카메라 이동 완료: ${waypointIdStr}`
+                  );
+                } catch (error) {
+                  console.error("카메라 이동 중 오류:", error);
+                }
+              }
 
               console.log(`웨이포인트 선택됨: ${waypointIdStr}`);
             } else {
