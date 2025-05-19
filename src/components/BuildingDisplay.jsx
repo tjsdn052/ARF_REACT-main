@@ -62,7 +62,7 @@ function BuildingDisplayComponent({ buildingId }) {
         setLoading(true);
 
         // API 기본 URL 설정
-        const apiBaseUrl = "https://afk-mock.onrender.com";
+        const apiBaseUrl = "http://3.37.127.247:8080";
 
         // API 요청에 타임아웃 적용
         const controller = new AbortController();
