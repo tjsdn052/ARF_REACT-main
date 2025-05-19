@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import styles from "./ImageCard.module.css";
+import { API_BASE_URL } from "../config/api";
 import ImagePopup from "./ImagePopup";
 import ImageGallery from "./ImageGallery";
 
@@ -58,10 +59,9 @@ export default function ImageCard({ buildingId, buildingData }) {
     }
 
     setLoading(true);
-    const apiBaseUrl = "https://afk-mock.onrender.com";
 
     // API에서 건물 데이터 가져오기
-    fetch(`${apiBaseUrl}/buildings/${buildingId}`)
+    fetch(`${API_BASE_URL}/buildings/${buildingId}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("건물 데이터를 불러오는 데 실패했습니다");
@@ -100,7 +100,7 @@ export default function ImageCard({ buildingId, buildingData }) {
               images.push({
                 url: crack.imageUrl,
                 date: crack.date,
-                width_mm: crack.width_mm,
+                widthMm: crack.widthMm,
                 pointLabel: waypoint.label || `웨이포인트 ${waypoint.id}`,
               });
             }
@@ -179,7 +179,7 @@ export default function ImageCard({ buildingId, buildingData }) {
             url: validateImageUrl(wp.url || wp.imageUrl),
             label: wp.label || wp.pointLabel,
             date: wp.date,
-            width_mm: wp.width_mm,
+            widthMm: wp.widthMm,
           };
         })
       : [];
