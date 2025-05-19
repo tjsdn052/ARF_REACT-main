@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import ReactDOM from "react-dom";
-import styles from "./KakaoMap.module.css"; // 같은 스타일 사용
+import { API_BASE_URL } from "../config/api";
 import ImagePopup from "./ImagePopup"; // 외부 ImagePopup 컴포넌트 import
 
 export default function VWorldMaps({
@@ -8,7 +8,7 @@ export default function VWorldMaps({
   onClose,
   latitude = 37.5665,
   longitude = 126.978,
-  height = 200,
+  height = 200, // 기본 높이값을 200으로 설정
   buildingId = null, // 건물 ID prop 추가
   waypointId = null, // 웨이포인트 ID prop 추가
 }) {
@@ -32,7 +32,7 @@ export default function VWorldMaps({
   const [markers, setMarkers] = useState([]); // 마커 ID 관리를 위한 상태 추가
   const [cracks, setCracks] = useState([]); // 균열 데이터 상태 추가
   const [cesiumReady, setCesiumReady] = useState(false); // Cesium 초기화 상태 추가
-  const [showTooltip, setShowTooltip] = useState(false); // 툴팁 표시 상태 추가
+  const [showTooltip, setShowTooltip] = useState(false); // 툴크 표시 상태 추가
 
   // 초기 마운트 시 waypointId prop 적용을 위한 ref
   const initialMountRef = useRef(true);
@@ -339,10 +339,7 @@ export default function VWorldMaps({
 
     console.log(`건물 데이터 로드 시도: 건물 ID ${buildingId}`);
 
-    // API 기본 URL 설정
-    const apiBaseUrl = "https://afk-mock.onrender.com";
-
-    fetch(`${apiBaseUrl}/buildings/${buildingId}`)
+    fetch(`${API_BASE_URL}/buildings/${buildingId}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("건물 정보를 불러오는 데 실패했습니다.");
@@ -370,10 +367,10 @@ export default function VWorldMaps({
     }
 
     // 높이 값만 로그 출력
-    console.log(`현재 카메라 높이: ${height || 100}m`);
+    console.log(`현재 카메라 높이: ${height || 200}m`);
 
-    // 기본 높이 설정 - 높이가 없으면 100으로 기본값 설정, 있으면 그대로 사용
-    const defaultHeight = height || 100;
+    // 기본 높이 설정 - 높이가 없으면 200으로 기본값 설정, 있으면 그대로 사용
+    const defaultHeight = height || 200;
 
     const opts = new window.vw.MapOptions(
       window.vw.BasemapType.GRAPHIC,
@@ -418,6 +415,24 @@ export default function VWorldMaps({
                   // 오류 발생 시 로그 없음
                 }
               }
+            }
+
+            // Cesium 뷰어가 준비되면 카메라 위치 설정
+            if (cesiumViewerRef.current && window.Cesium) {
+              const cameraPosition = window.Cesium.Cartesian3.fromDegrees(
+                longitude,
+                latitude,
+                defaultHeight
+              );
+
+              cesiumViewerRef.current.camera.setView({
+                destination: cameraPosition,
+                orientation: {
+                  heading: window.Cesium.Math.toRadians(0),
+                  pitch: window.Cesium.Math.toRadians(-90),
+                  roll: 0,
+                },
+              });
             }
 
             setCesiumReady(true);
@@ -539,7 +554,7 @@ export default function VWorldMaps({
               (a, b) => new Date(b.date) - new Date(a.date)
             );
             const latestCrack = sortedCracks[0];
-            width = latestCrack.width_mm || 0;
+            width = latestCrack.widthMm || 0;
 
             // 균열 폭에 따른 심각도 결정
             if (width >= 1.5) {
@@ -1013,7 +1028,7 @@ export default function VWorldMaps({
                     }}
                   >
                     LOD1과 LOD4는 지역에 따라 다르게 적용될 수 있습니다. 건물이
-                    보이지 않는다면, LOD 설정을 LOD1이나 LOD4로 변경해보세요.
+                    보이지 않는다면, LOD 수준을 변경해주세요.
                   </p>
 
                   <p
