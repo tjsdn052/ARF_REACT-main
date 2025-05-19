@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Header from "../components/Header";
+import { API_BASE_URL } from "../config/api";
 
 import styles from "../styles/CrackDetail.module.css";
 import KeyMetricCard from "../components/KeyMetricCard";
@@ -18,10 +19,8 @@ function CrackDetail() {
   useEffect(() => {
     if (!id) return;
 
-    const apiBaseUrl = "https://afk-mock.onrender.com";
-
     // 데이터 가져오기 (프록시를 통하지 않고 직접 호출)
-    fetch(`${apiBaseUrl}/buildings/${id}`)
+    fetch(`${API_BASE_URL}/buildings/${id}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("건물 데이터를 불러오는 데 실패했습니다");
