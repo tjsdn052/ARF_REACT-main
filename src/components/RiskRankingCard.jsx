@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./RiskRankingCard.module.css";
+import { API_BASE_URL } from "../config/api";
 import VWorldMaps from "./VWorldMaps";
 
 /**
@@ -66,9 +67,8 @@ export default function RiskRankingCard({ buildingId, buildingData }) {
 
       // buildingData가 없는 경우 API 호출
       setLoading(true);
-      const apiBaseUrl = "https://afk-mock.onrender.com";
 
-      fetch(`${apiBaseUrl}/buildings/${buildingId}`)
+      fetch(`${API_BASE_URL}/buildings/${buildingId}`)
         .then((response) => {
           if (!response.ok) {
             throw new Error("건물 데이터를 불러오는 데 실패했습니다.");
@@ -86,9 +86,8 @@ export default function RiskRankingCard({ buildingId, buildingData }) {
     } else {
       // 건물 ID가 없는 경우 모든 건물 불러와서 첫번째 건물 데이터 표시
       setLoading(true);
-      const apiBaseUrl = "https://afk-mock.onrender.com";
 
-      fetch(`${apiBaseUrl}/buildings`)
+      fetch(`${API_BASE_URL}/buildings`)
         .then((response) => {
           if (!response.ok) {
             throw new Error("건물 데이터를 불러오는 데 실패했습니다.");
@@ -136,7 +135,7 @@ export default function RiskRankingCard({ buildingId, buildingData }) {
           return {
             id: point.id,
             label: point.label,
-            latestWidth: sortedCracks[0].width_mm || 0,
+            latestWidth: sortedCracks[0].widthMm || 0,
             date: sortedCracks[0].date,
             location: point.location,
           };
