@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 import styles from "../styles/BuildingsPage.module.css";
 
 // 요약 카드 컴포넌트
@@ -34,17 +35,17 @@ function BuildingCard({ building }) {
   // 마지막 점검일 계산
   const lastChecked = cracks.length
     ? cracks.reduce((latest, curr) =>
-        new Date(curr.date) > new Date(latest.date) ? curr : latest
-      ).date
+        new Date(curr.timestamp) > new Date(latest.timestamp) ? curr : latest
+      ).timestamp
     : null;
 
   const crackCount = cracks.length;
   const maxWidth = cracks.length
-    ? Math.max(...cracks.map((c) => c.width_mm || 0))
+    ? Math.max(...cracks.map((c) => c.widthMm || 0))
     : 0;
   const avgWidth = cracks.length
     ? (
-        cracks.reduce((sum, c) => sum + (c.width_mm || 0), 0) / cracks.length
+        cracks.reduce((sum, c) => sum + (c.widthMm || 0), 0) / cracks.length
       ).toFixed(2)
     : 0;
 
@@ -135,11 +136,8 @@ function BuildingList() {
 
     setLoading(true);
 
-    // API 기본 URL 설정
-    const apiBaseUrl = "https://afk-mock.onrender.com";
-
     // db.json에서 건물 정보 가져오기
-    fetch(`${apiBaseUrl}/buildings`)
+    fetch(`${API_BASE_URL}/buildings`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("건물 데이터를 불러오는 데 실패했습니다");
@@ -210,9 +208,9 @@ function BuildingList() {
             buildingCrackCount += waypoint.cracks.length;
 
             waypoint.cracks.forEach((crack) => {
-              if (crack.width_mm) {
-                maxWidth = Math.max(maxWidth, crack.width_mm);
-                totalWidth += crack.width_mm;
+              if (crack.widthMm) {
+                maxWidth = Math.max(maxWidth, crack.widthMm);
+                totalWidth += crack.widthMm;
                 crackCount++;
               }
             });
